@@ -3,20 +3,17 @@ warning ("off", "Octave:broadcast"); ;
 %%% the bell curve (aka the normal distribution, the Gaussian), does not form a bell in hyperspace (>3 dimensions) 
 %%% this is because there is a higher chance of getting a value further from the mean than close to it
 %%% this function is a solution to this problem. I call it the multi-dimension similarity algorithm (MDSA) 
-%%% with pythagorean_distance on (enabled byu default) it acts much in the same way as a Gaussian
-%%% the only mathematically significant addition is that of a dimesnions_weights , which is optional (ones by default) 
 
-%%% I use analogies to make the math and code more intuitive, so here is a translation beforehand. 
-%%% the mean is represented as the role_model 
-%%% the number of random points the function will generate is called the number_of_apprentices 
+%%% the mean is represented as the role_model variable 
+%%% the number of random outputs/vectors the function will generate is called the number_of_apprentices 
 %%% the over all standard deviation is just the standard_dev 
 %%% a sort of standard deviation for individual dimensions is represented by the characteristic_weights 
 
 
  
    %%% number_of_apprentices  needs to be a scalar 
-   %%% role_model             needs to be a column vector (aka vector transpose) with each column being a feature ./ dimension
-   %%% standard_dev  needs to be a scalar 
+   %%% role_model             needs to be a column vector/vector transpose with each column being a feature/dimension
+   %%% standard_dev           needs to be a scalar 
    %%% characteristic_weights needs to be a column vector with each column being the weight (a conversion constant) for that specific characteristic 
    
    %%% DEFAULT  role_model             = 1 
@@ -26,14 +23,14 @@ warning ("off", "Octave:broadcast"); ;
     
 
  
-
+ 
  %%%% there are two given ways to measure distance 
  %%%% this gives you a choice between them (read below for details)
      %%% the first type (and default) is pythagorean_distance 
      %%% its just drawing a line from one point to another and finding the hypotenuse
-     %%% the second is actually more simple, it's just adds the dimensions, thats it 
-     %%% Ex; the pythagorean_distance between point a (0,0) and point b (5,5) is 7.071 ( aka sqrt(50) ) 
-     %%%     the other distance between a and b would be 10 
+     %%% the second is actually more simple, it just adds the dimensions, thats it 
+     %%% Ex; the pythagorean_distance between point a(0,0) and point b(5,5) is sqrt(50) (~7.071) 
+     %%%     the other distance between point a(0,0) and point b(5,5) would be 10 (5 + 5)
      %%% for some pratical applications the second method can be more useful (its also slightly faster)
      %%% but the pythagorean_distance is statistically correct 
         %%% this is implemented here as function handles so that 
@@ -55,9 +52,9 @@ warning ("off", "Octave:broadcast"); ;
 %======================================================== ;
 
 %%%% we've got to decide how much we're going to allow any one apprentice to deviate from the role_model 
-     %%% so we're going to generate random values based on a normal distribution 
-     %%% and use those values as the maximum_distance , one value for each apprentice
-     %%% and we'll need to make it an absolute value because it's a distance
+     %%% so we're going to generate random values based on a regular old normal distribution 
+     %%% then we'll use those values as the maximum_distance, (one maximum_distance for each apprentice)
+     %%% We'll need to make it an absolute value because it's a distance
      %%% and because it's an absolute value (both sides now combined onto one side) we need to divide it by 2 
      local_mean          = 0 ;
      normal_distribution = normrnd ( local_mean , standard_dev , number_of_apprentices , 1 )       ;
@@ -67,29 +64,26 @@ warning ("off", "Octave:broadcast"); ;
 %        Core Loops         ;
 %========================================================;
 
-%%%% here is the OVERsimplified conceptual version of the program  
-    %%% There are several very important details missing from this, it's meant to get a general idea only 
+%%%% here is the simplified conceptual version of the program  
+    %%% (NOTE: There are several very important details missing from this, it's meant to get a general idea only)
     %%% The program starts by taking the maximum_distance value and assigning it to an apprentice.
     %%% that value is how much the apprentice is allowed to deviate total from the role_model 
     
     %%% then the first apprentice is chosen ( loop_1 ) 
-    %%% and a random characteristic is chosen ( loop_2 ) for that apprentice only
-    %%% then proposal is made, 
+    %%% and a random characteristic is chosen ( loop_2 ) for that apprentice only 
     %%% in the form of a proposed_change to the_chosen_characteristic 
     %%% ( a random, normally distributed, positive-only change )  
     %%% in order to test this proposal, a proposed_apprentice is made 
     
     %%% if the distance_to_the_proposed_apprentice is < the maximum_distance 
     %%% then loop_2 repeats, picking another random characteristic and making another proposed_change 
-    %%% ( if a characteristic is chosen twice, the new proposed_change is added to the existing change )
+    %%% ( if a characteristic is chosen twice, the new proposed_change is stacked on top of the existing change )
 
     %%% however if the distance_to_the_proposed_apprentice is >= the maximum_distance 
     %%% then we deny the proposed_change 
     %%% and instead the new_change is set to be;
     %%%     however much the_chosen_characteristic could change 
     %%%     while still keeping the proposed distance <= the maximum_distance 
-        %%% ( with some algrbra proposed_change is actually directly calculated 
-        %%%   making the proposed distance == the maximum_distance )
          
     %%% then (because no more change can be made) we move on to the next apprentice and repeat  
 
